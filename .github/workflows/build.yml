@@ -36,11 +36,15 @@ jobs:
     steps:
       - name: Generate CalVer tag
         id: version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DATE=$(date -u +%Y.%m.%d)
-          # Query existing tags to find next sequence number
-          TAGS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://ghcr.io/v2/sudothai/talentiq-api/tags/list" 2>/dev/null | jq -r '.tags[]?' 2>/dev/null || echo "")
+          # Query existing tags from GHCR package versions
+          TAGS=$(gh api orgs/${{ github.repository_owner }}/packages/container/talentiq-api/versions \
+            --jq '.[].metadata.container.tags[]' 2>/dev/null || \
+            gh api users/${{ github.repository_owner }}/packages/container/talentiq-api/versions \
+            --jq '.[].metadata.container.tags[]' 2>/dev/null || echo "")
           SEQ=0
           while echo "$TAGS" | grep -q "^${DATE}.${SEQ}$"; do
             SEQ=$((SEQ + 1))
