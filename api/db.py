@@ -45,6 +45,7 @@ def init_db():
                 skills TEXT[],
                 titles TEXT[],
                 years_experience INT,
+                clearance TEXT,
                 education JSONB,
                 raw_file_path TEXT,
                 processed_file_path TEXT,
@@ -65,5 +66,17 @@ def init_db():
             CREATE INDEX IF NOT EXISTS idx_resume_chunks_embedding
             ON resume_chunks USING ivfflat (embedding vector_cosine_ops)
             WITH (lists = 10);
+        """)
+        # Migration: add clearance column if missing
+        cur.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'candidates' AND column_name = 'clearance'
+                ) THEN
+                    ALTER TABLE candidates ADD COLUMN clearance TEXT;
+                END IF;
+            END $$;
         """)
         conn.commit()

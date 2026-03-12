@@ -21,7 +21,11 @@ EXTRACT_SYSTEM = (
     "You are a resume parser. Extract structured data from the resume text "
     "and return ONLY valid JSON with no other text.\n"
     'Schema: { "name": "", "email": "", "skills": [], "titles": [], '
-    '"years_experience": 0, "education": [] }'
+    '"years_experience": 0, "education": [], '
+    '"clearance": "" }\n'
+    'For clearance, extract any security clearance level mentioned '
+    '(e.g. "Top Secret/SCI", "Top Secret", "Secret", "Confidential", "Public Trust"). '
+    'Leave empty string if none mentioned.'
 )
 
 
@@ -148,9 +152,9 @@ async def ingest_resume(filename: str, data: bytes) -> dict:
         cur = conn.cursor()
         cur.execute(
             """INSERT INTO candidates
-               (id, name, email, skills, titles, years_experience, education,
-                raw_file_path, processed_file_path)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+               (id, name, email, skills, titles, years_experience, clearance,
+                education, raw_file_path, processed_file_path)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
             (
                 candidate_id,
                 extracted.get("name", ""),
@@ -158,6 +162,7 @@ async def ingest_resume(filename: str, data: bytes) -> dict:
                 extracted.get("skills", []),
                 extracted.get("titles", []),
                 extracted.get("years_experience", 0),
+                extracted.get("clearance", ""),
                 json.dumps(extracted.get("education", [])),
                 raw_path,
                 processed_path,

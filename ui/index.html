@@ -35,6 +35,15 @@
   .score { float: right; background: #1a1a2e; color: white; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
   input[type="file"] { display: none; }
   .section-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 0.75rem; }
+  .filters { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+  .filters select { padding: 0.5rem 0.75rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; outline: none; background: white; cursor: pointer; }
+  .filters select:focus { border-color: #0ea5e9; }
+  .clearance-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; margin-left: 0.5rem; }
+  .clearance-ts-sci { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  .clearance-ts { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+  .clearance-secret { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+  .clearance-confidential { background: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; }
+  .clearance-public-trust { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
   .sim-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1.5rem; }
   .sim-row input { width: 100px; padding: 0.5rem 0.75rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; outline: none; }
   .sim-row input:focus { border-color: #0ea5e9; }
@@ -81,6 +90,23 @@
   <div class="search-box">
     <input type="text" id="searchInput" placeholder="e.g. senior Python developer with AWS experience">
     <button id="searchBtn">Search</button>
+  </div>
+  <div class="filters">
+    <select id="clearanceFilter">
+      <option value="">Any Clearance</option>
+      <option value="Top Secret/SCI">Top Secret/SCI</option>
+      <option value="Top Secret">Top Secret</option>
+      <option value="Secret">Secret</option>
+      <option value="Confidential">Confidential</option>
+      <option value="Public Trust">Public Trust</option>
+    </select>
+    <select id="expFilter">
+      <option value="">Any Experience</option>
+      <option value="1-3">1-3 years</option>
+      <option value="4-7">4-7 years</option>
+      <option value="8-12">8-12 years</option>
+      <option value="13+">13+ years</option>
+    </select>
   </div>
 
   <div class="results" id="results"></div>
@@ -143,13 +169,29 @@ async function uploadFile(file) {
 searchBtn.addEventListener('click', doSearch);
 searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
 
+const clearanceFilter = document.getElementById('clearanceFilter');
+const expFilter = document.getElementById('expFilter');
+
+function clearanceBadge(c) {
+  if (!c) return '';
+  const cls = c.includes('SCI') ? 'ts-sci' : c === 'Top Secret' ? 'ts' : c === 'Secret' ? 'secret' : c === 'Confidential' ? 'confidential' : 'public-trust';
+  return '<span class="clearance-badge clearance-' + cls + '">' + escHtml(c) + '</span>';
+}
+
 async function doSearch() {
   const q = searchInput.value.trim();
   if (!q) return;
   showStatus('Searching...', 'loading');
   results.innerHTML = '';
+  let url = API + '/api/search?q=' + encodeURIComponent(q);
+  if (clearanceFilter.value) url += '&clearance=' + encodeURIComponent(clearanceFilter.value);
+  const expVal = expFilter.value;
+  if (expVal) {
+    if (expVal === '13+') { url += '&min_exp=13'; }
+    else { const [lo, hi] = expVal.split('-'); url += '&min_exp=' + lo + '&max_exp=' + hi; }
+  }
   try {
-    const res = await fetch(API + '/api/search?q=' + encodeURIComponent(q));
+    const res = await fetch(url);
     const data = await res.json();
     hideStatus();
     if (!data.length) {
@@ -161,7 +203,7 @@ async function doSearch() {
       card.className = 'card';
       card.innerHTML = `
         <span class="score">${c.score}</span>
-        <div class="name">${escHtml(c.name)}</div>
+        <div class="name">${escHtml(c.name)}${clearanceBadge(c.clearance)}</div>
         <div class="meta">${c.years_experience || '?'} years experience</div>
         <div class="explanation">${escHtml(c.explanation)}</div>
         <div class="skills">${(c.skills || []).map(s => '<span class="skill">' + escHtml(s) + '</span>').join('')}</div>

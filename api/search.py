@@ -39,22 +39,40 @@ def strip_json(text: str) -> str:
     return text
 
 
-async def search_candidates(query: str) -> list[dict]:
+async def search_candidates(query: str, clearance: str = "", min_exp: int = 0, max_exp: int = 99) -> list[dict]:
     query_embedding = embed_text(query)
 
     # Vector similarity search — top 20
+    filters = []
+    params = [str(query_embedding), str(query_embedding)]
+
+    if clearance:
+        filters.append("c.clearance = %s")
+        params.append(clearance)
+    if min_exp > 0:
+        filters.append("c.years_experience >= %s")
+        params.append(min_exp)
+    if max_exp < 99:
+        filters.append("c.years_experience <= %s")
+        params.append(max_exp)
+
+    where_clause = ""
+    if filters:
+        where_clause = "WHERE " + " AND ".join(filters)
+
     with get_conn() as conn:
         cur = conn.cursor()
         cur.execute(
-            """
+            f"""
             SELECT DISTINCT ON (c.id)
                 c.id, c.name, c.skills, c.years_experience, c.titles,
-                1 - (rc.embedding <=> %s::vector) AS score
+                1 - (rc.embedding <=> %s::vector) AS score, c.clearance
             FROM resume_chunks rc
             JOIN candidates c ON c.id = rc.candidate_id
+            {where_clause}
             ORDER BY c.id, rc.embedding <=> %s::vector
             """,
-            (str(query_embedding), str(query_embedding)),
+            params,
         )
         rows = cur.fetchall()
 
@@ -68,7 +86,7 @@ async def search_candidates(query: str) -> list[dict]:
     # Build context for reranking
     candidates_text = "\n".join(
         f"- candidate_id: {r[0]}, name: {r[1]}, skills: {r[2]}, "
-        f"titles: {r[4]}, years_experience: {r[3]}, similarity: {r[5]:.3f}"
+        f"titles: {r[4]}, years_experience: {r[3]}, clearance: {r[6] or 'None'}, similarity: {r[5]:.3f}"
         for r in top20
     )
 
@@ -105,6 +123,7 @@ async def search_candidates(query: str) -> list[dict]:
                 "explanation": item.get("explanation", ""),
                 "skills": row[2] or [],
                 "years_experience": row[3],
+                "clearance": row[6] or "",
             })
 
     return results
@@ -114,7 +133,7 @@ async def list_candidates() -> list[dict]:
     with get_conn() as conn:
         cur = conn.cursor()
         cur.execute(
-            """SELECT id, name, email, skills, titles, years_experience, created_at
+            """SELECT id, name, email, skills, titles, years_experience, created_at, clearance
                FROM candidates ORDER BY created_at DESC"""
         )
         rows = cur.fetchall()
@@ -128,6 +147,7 @@ async def list_candidates() -> list[dict]:
             "titles": r[4] or [],
             "years_experience": r[5],
             "created_at": r[6].isoformat() if r[6] else None,
+            "clearance": r[7] or "",
         }
         for r in rows
     ]

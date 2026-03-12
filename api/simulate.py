@@ -97,6 +97,17 @@ EDUCATION = [
     {"degree": "B.S. Physics", "school": "Caltech"},
 ]
 
+CLEARANCE_LEVELS = [
+    "Top Secret/SCI", "Top Secret", "Secret", "Confidential", "Public Trust",
+]
+
+# Companies where clearance is more likely
+CLEARED_COMPANIES = [
+    "Lockheed Martin", "Raytheon", "Northrop Grumman", "General Dynamics",
+    "BAE Systems", "L3Harris Technologies", "Leidos", "SAIC", "Booz Allen Hamilton",
+    "ManTech", "CACI International", "Peraton", "Parsons Corporation",
+]
+
 COMPANIES = [
     "Google", "Amazon", "Meta", "Apple", "Microsoft", "Netflix", "Uber", "Airbnb",
     "Stripe", "Shopify", "Salesforce", "Oracle", "IBM", "Intel", "Cisco", "VMware",
@@ -108,7 +119,7 @@ COMPANIES = [
     "Frontier AI", "Nimbus Cloud", "Spark Digital", "Atlas Computing",
     "JPMorgan Chase", "Goldman Sachs", "Morgan Stanley", "Capital One",
     "Deloitte", "McKinsey", "Accenture", "PwC", "KPMG", "EY",
-]
+] + CLEARED_COMPANIES
 
 ACHIEVEMENTS = [
     "Reduced API latency by {pct}% through query optimization",
@@ -162,6 +173,17 @@ def generate_candidate() -> dict:
     num_jobs = min(random.randint(1, 4), max(1, years // 3))
     companies = random.sample(COMPANIES, k=num_jobs)
 
+    # Assign clearance — higher chance for security/devops specs or defense companies
+    clearance = ""
+    has_defense = any(c in CLEARED_COMPANIES for c in companies)
+    has_sec_spec = "security" in specs or "devops" in specs
+    if has_defense:
+        clearance = random.choice(CLEARANCE_LEVELS)
+    elif has_sec_spec and random.random() < 0.4:
+        clearance = random.choice(CLEARANCE_LEVELS)
+    elif random.random() < 0.1:
+        clearance = random.choice(CLEARANCE_LEVELS[2:])  # Secret or below
+
     # Build resume text
     sections = {}
     sections["header"] = f"{name}\n{email}\n{random.choice(['San Francisco', 'New York', 'Seattle', 'Austin', 'Chicago', 'Denver', 'Boston', 'Portland', 'Atlanta', 'Miami', 'Toronto', 'London', 'Berlin', 'Singapore', 'Bangalore', 'Remote'])}, {random.choice(['CA', 'NY', 'WA', 'TX', 'IL', 'CO', 'MA', 'OR', 'GA', 'FL', 'ON', 'UK', 'DE', 'SG', 'IN', ''])}"
@@ -179,6 +201,9 @@ def generate_candidate() -> dict:
 
     sections["skills"] = "Skills\n" + ", ".join(skills)
 
+    if clearance:
+        sections["clearance"] = f"Security Clearance\n{clearance} — Active"
+
     edu_lines = ["Education"]
     for e in edu:
         edu_lines.append(f"{e['degree']} - {e['school']}")
@@ -192,6 +217,7 @@ def generate_candidate() -> dict:
         "skills": skills,
         "titles": titles,
         "years_experience": years,
+        "clearance": clearance,
         "education": edu,
         "text": full_text,
         "sections": sections,
@@ -229,6 +255,7 @@ async def run_simulation(count: int = 10000) -> AsyncGenerator[str, None]:
                     "skills": candidate["skills"],
                     "titles": candidate["titles"],
                     "years_experience": candidate["years_experience"],
+                    "clearance": candidate["clearance"],
                     "education": candidate["education"],
                 }
                 processed_bytes = json.dumps(extracted, indent=2).encode()
@@ -239,9 +266,9 @@ async def run_simulation(count: int = 10000) -> AsyncGenerator[str, None]:
                     cur = conn.cursor()
                     cur.execute(
                         """INSERT INTO candidates
-                           (id, name, email, skills, titles, years_experience, education,
-                            raw_file_path, processed_file_path)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                           (id, name, email, skills, titles, years_experience, clearance,
+                            education, raw_file_path, processed_file_path)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                         (
                             candidate_id,
                             candidate["name"],
@@ -249,6 +276,7 @@ async def run_simulation(count: int = 10000) -> AsyncGenerator[str, None]:
                             candidate["skills"],
                             candidate["titles"],
                             candidate["years_experience"],
+                            candidate["clearance"],
                             json.dumps(candidate["education"]),
                             f"simulated/{candidate_id}",
                             processed_path,

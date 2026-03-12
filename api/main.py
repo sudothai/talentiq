@@ -37,8 +37,13 @@ async def ingest(file: UploadFile = File(...)):
 
 
 @app.get("/api/search")
-async def search(q: str = Query(..., min_length=1)):
-    results = await search_candidates(q)
+async def search(
+    q: str = Query(..., min_length=1),
+    clearance: str = Query(default=""),
+    min_exp: int = Query(default=0),
+    max_exp: int = Query(default=99),
+):
+    results = await search_candidates(q, clearance=clearance, min_exp=min_exp, max_exp=max_exp)
     return results
 
 
