@@ -39,6 +39,8 @@ spec:
               value: "talentiq"
             - name: POSTGRES_PASSWORD
               value: "talentiq123"
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
           volumeMounts:
             - name: pg-data
               mountPath: /var/lib/postgresql/data
