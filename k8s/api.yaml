@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: talentiq-api:latest
+          image: ghcr.io/sudothai/talentiq-api:latest # {"$imagepolicy": "api"}
           ports:
             - containerPort: 8000
           envFrom:

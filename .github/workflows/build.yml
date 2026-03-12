@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/kubespark/talentiq-api
+  IMAGE_NAME: ghcr.io/sudothai/talentiq-api
 
 jobs:
   check:
@@ -29,6 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: check
     if: needs.check.outputs.skip == 'false'
+    permissions:
+      packages: read
     outputs:
       tag: ${{ steps.version.outputs.tag }}
     steps:
@@ -37,8 +39,8 @@ jobs:
         run: |
           DATE=$(date -u +%Y.%m.%d)
           # Query existing tags to find next sequence number
-          TAGS=$(curl -s -H "Authorization: Bearer ${{ secrets.CR_PAT }}" \
-            "https://ghcr.io/v2/kubespark/talentiq-api/tags/list" 2>/dev/null | jq -r '.tags[]?' 2>/dev/null || echo "")
+          TAGS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://ghcr.io/v2/sudothai/talentiq-api/tags/list" 2>/dev/null | jq -r '.tags[]?' 2>/dev/null || echo "")
           SEQ=0
           while echo "$TAGS" | grep -q "^${DATE}.${SEQ}$"; do
             SEQ=$((SEQ + 1))
@@ -63,8 +65,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.CR_PAT }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Docker metadata
         id: meta
@@ -100,12 +102,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.CR_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update K8s manifest with new image tag
         run: |
           VERSION=${{ needs.version.outputs.tag }}
-          sed -i "s|image: talentiq-api:.*|image: ${{ env.IMAGE_NAME }}:${VERSION} # {\"\\$imagepolicy\": \"api\"}|" k8s/api.yaml
+          sed -i "s|image: ghcr.io/sudothai/talentiq-api:.*|image: ${{ env.IMAGE_NAME }}:${VERSION} # {\"\\$imagepolicy\": \"api\"}|" k8s/api.yaml
 
       - name: Commit and push
         run: |
