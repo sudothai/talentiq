@@ -35,6 +35,18 @@
   .score { float: right; background: #1a1a2e; color: white; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
   input[type="file"] { display: none; }
   .section-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 0.75rem; }
+  .sim-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1.5rem; }
+  .sim-row input { width: 100px; padding: 0.5rem 0.75rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; outline: none; }
+  .sim-row input:focus { border-color: #0ea5e9; }
+  .sim-btn { padding: 0.5rem 1.25rem; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: opacity 0.2s; }
+  .sim-btn:hover { opacity: 0.9; }
+  .sim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .sim-label { color: #64748b; font-size: 0.85rem; }
+  .progress-wrap { display: none; margin-bottom: 1.5rem; }
+  .progress-wrap.active { display: block; }
+  .progress-bar-bg { background: #e2e8f0; border-radius: 999px; height: 8px; overflow: hidden; margin-bottom: 0.5rem; }
+  .progress-bar { background: linear-gradient(90deg, #7c3aed, #0ea5e9); height: 100%; border-radius: 999px; transition: width 0.3s; width: 0%; }
+  .progress-text { font-size: 0.8rem; color: #64748b; }
 </style>
 </head>
 <body>
@@ -51,6 +63,17 @@
     <p>Drag & drop a PDF or DOCX file, or click to browse</p>
   </div>
   <input type="file" id="fileInput" accept=".pdf,.docx,.doc">
+
+  <div class="section-label">Simulate Data</div>
+  <div class="sim-row">
+    <input type="number" id="simCount" value="10000" min="1" max="50000">
+    <button class="sim-btn" id="simBtn">Generate Mock Resumes</button>
+    <span class="sim-label">resumes to generate &amp; embed</span>
+  </div>
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-text" id="progressText"></div>
+  </div>
 
   <div id="status" class="status"></div>
 
@@ -155,6 +178,55 @@ function escHtml(s) {
   d.textContent = s;
   return d.innerHTML;
 }
+
+const simBtn = document.getElementById('simBtn');
+const simCount = document.getElementById('simCount');
+const progressWrap = document.getElementById('progressWrap');
+const progressBar = document.getElementById('progressBar');
+const progressText = document.getElementById('progressText');
+
+simBtn.addEventListener('click', async () => {
+  const count = parseInt(simCount.value) || 10000;
+  simBtn.disabled = true;
+  progressWrap.classList.add('active');
+  progressBar.style.width = '0%';
+  progressText.textContent = 'Starting simulation...';
+
+  try {
+    const res = await fetch(API + '/api/simulate?count=' + count, { method: 'POST' });
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const evt = JSON.parse(line.slice(6));
+          if (evt.status === 'progress' || evt.status === 'complete') {
+            const pct = Math.round((evt.ingested / evt.total) * 100);
+            progressBar.style.width = pct + '%';
+            progressText.textContent = evt.ingested.toLocaleString() + ' / ' + evt.total.toLocaleString() + ' ingested' + (evt.errors ? ' (' + evt.errors + ' errors)' : '');
+            if (evt.status === 'complete') {
+              progressText.textContent += ' — Done!';
+              loadCount();
+            }
+          } else if (evt.status === 'starting') {
+            progressText.textContent = 'Generating ' + evt.total.toLocaleString() + ' mock resumes...';
+          }
+        } catch(e) {}
+      }
+    }
+  } catch(e) {
+    progressText.textContent = 'Simulation failed: ' + e.message;
+  }
+  simBtn.disabled = false;
+});
 
 loadCount();
 </script>

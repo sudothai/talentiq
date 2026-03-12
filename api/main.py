@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
@@ -7,6 +7,7 @@ import os
 from db import init_db
 from ingest import ingest_resume
 from search import search_candidates, list_candidates
+from simulate import run_simulation
 
 app = FastAPI(title="TalentIQ", version="0.1.0")
 
@@ -44,6 +45,15 @@ async def search(q: str = Query(..., min_length=1)):
 @app.get("/api/candidates")
 async def candidates():
     return await list_candidates()
+
+
+@app.post("/api/simulate")
+async def simulate(count: int = Query(default=10000, ge=1, le=50000)):
+    return StreamingResponse(
+        run_simulation(count),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 # Serve UI static files
