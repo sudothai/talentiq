@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: talentiq-config
+  namespace: talentiq
+data:
+  MINIO_ENDPOINT: "minio-svc.talentiq.svc.cluster.local:9000"
+  MINIO_ACCESS_KEY: "talentiq"
+  MINIO_SECRET_KEY: "talentiq123"
+  POSTGRES_URL: "postgresql://talentiq:talentiq123@postgres-svc.talentiq.svc.cluster.local:5432/talentiq"
+  OLLAMA_BASE_URL: "http://ollama.radinsystems.svc.cluster.local:11434"
