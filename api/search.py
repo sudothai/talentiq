@@ -98,7 +98,7 @@ async def search_candidates(query: str, clearance: str = "", min_exp: int = 0, m
     resp = httpx.post(
         f"{OLLAMA_BASE_URL}/api/generate",
         json={
-            "model": "llama3.2:8b",
+            "model": "llama3.1:8b",
             "prompt": rerank_prompt,
             "system": RERANK_SYSTEM,
             "stream": False,

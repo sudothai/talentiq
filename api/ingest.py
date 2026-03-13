@@ -63,7 +63,7 @@ def strip_json(text: str) -> str:
     return text
 
 
-def call_ollama(prompt: str, system: str, model: str = "llama3.2:8b") -> str:
+def call_ollama(prompt: str, system: str, model: str = "llama3.1:8b") -> str:
     resp = httpx.post(
         f"{OLLAMA_BASE_URL}/api/generate",
         json={"model": model, "prompt": prompt, "system": system, "stream": False},
