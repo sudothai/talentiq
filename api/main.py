@@ -52,6 +52,16 @@ async def candidates():
     return await list_candidates()
 
 
+@app.get("/api/candidates/count")
+async def candidates_count():
+    from db import get_conn
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM candidates")
+        count = cur.fetchone()[0]
+    return {"count": count}
+
+
 @app.delete("/api/candidates")
 async def clear_candidates():
     try:

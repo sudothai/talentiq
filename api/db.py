@@ -62,10 +62,10 @@ def init_db():
                 created_at TIMESTAMP DEFAULT NOW()
             );
         """)
+        # Use HNSW index instead of IVFFlat — works on empty tables
         cur.execute("""
             CREATE INDEX IF NOT EXISTS idx_resume_chunks_embedding
-            ON resume_chunks USING ivfflat (embedding vector_cosine_ops)
-            WITH (lists = 10);
+            ON resume_chunks USING hnsw (embedding vector_cosine_ops);
         """)
         # Migration: add clearance column if missing
         cur.execute("""
