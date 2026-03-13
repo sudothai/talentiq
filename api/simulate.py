@@ -12,6 +12,18 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from db import get_conn
 from ingest import embed_text, get_minio, ensure_bucket
 
+_simulation_stop = False
+
+
+def stop_simulation():
+    global _simulation_stop
+    _simulation_stop = True
+
+
+def _reset_stop():
+    global _simulation_stop
+    _simulation_stop = False
+
 FIRST_NAMES = [
     "James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda",
     "David", "Elizabeth", "William", "Barbara", "Richard", "Susan", "Joseph", "Jessica",
@@ -313,6 +325,7 @@ def generate_candidate() -> dict:
 
 async def run_simulation(count: int = 10000) -> AsyncGenerator[str, None]:
     """Generate and ingest mock resumes, yielding SSE progress events."""
+    _reset_stop()
     mc = get_minio()
     ensure_bucket(mc)
     BUCKET = "resumes"
@@ -324,6 +337,9 @@ async def run_simulation(count: int = 10000) -> AsyncGenerator[str, None]:
     yield f"data: {json.dumps({'status': 'starting', 'total': count})}\n\n"
 
     for batch_start in range(0, count, batch_size):
+        if _simulation_stop:
+            yield f"data: {json.dumps({'status': 'stopped', 'ingested': ingested, 'errors': errors, 'total': count})}\n\n"
+            return
         batch_end = min(batch_start + batch_size, count)
         batch_candidates = []
 

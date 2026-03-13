@@ -7,107 +7,135 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f7fa; color: #1a1a2e; min-height: 100vh; }
-  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-  .header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; }
   .header h1 span { color: #0ea5e9; }
-  .header-right { display: flex; align-items: center; gap: 0.75rem; }
-  .badge { background: rgba(14, 165, 233, 0.2); color: #0ea5e9; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.8rem; }
-  .nav-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 500; transition: background 0.2s; }
-  .nav-btn:hover { background: rgba(255,255,255,0.2); }
-  .nav-btn.active { background: rgba(14,165,233,0.3); border-color: #0ea5e9; }
-  .chat-toggle { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; border: none; padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 600; }
+  .header-right { display: flex; align-items: center; gap: 0.6rem; }
+  .badge { background: rgba(14, 165, 233, 0.2); color: #0ea5e9; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+  .nav-btn { background: rgba(255,255,255,0.08); color: white; border: 1px solid rgba(255,255,255,0.15); padding: 0.35rem 0.9rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+  .nav-btn:hover { background: rgba(255,255,255,0.15); }
+  .nav-btn.active { background: rgba(14,165,233,0.25); border-color: #0ea5e9; }
+  .chat-toggle { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; border: none; padding: 0.35rem 0.9rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 600; }
   .chat-toggle:hover { opacity: 0.9; }
+
+  /* Pages */
   .page { display: none; }
   .page.active { display: block; }
-  .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
-  .upload-zone { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 2.5rem; text-align: center; background: white; cursor: pointer; transition: all 0.2s; margin-bottom: 1.5rem; }
+  .container { max-width: 1000px; margin: 1.5rem auto; padding: 0 1.5rem; }
+
+  /* Two-column top row */
+  .top-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  @media (max-width: 700px) { .top-row { grid-template-columns: 1fr; } }
+
+  .panel { background: white; border-radius: 12px; padding: 1.25rem; border: 1px solid #e2e8f0; }
+  .panel-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 0.75rem; }
+
+  /* Upload */
+  .upload-zone { border: 2px dashed #cbd5e1; border-radius: 10px; padding: 1.75rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s; }
   .upload-zone:hover, .upload-zone.dragover { border-color: #0ea5e9; background: #f0f9ff; }
-  .upload-zone p { color: #64748b; margin-top: 0.5rem; font-size: 0.9rem; }
-  .upload-zone .icon { font-size: 2rem; margin-bottom: 0.5rem; }
-  .search-box { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
-  .search-box input { flex: 1; padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.2s; }
-  .search-box input:focus { border-color: #0ea5e9; }
-  .search-box button { padding: 0.75rem 1.5rem; background: #1a1a2e; color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
-  .search-box button:hover { background: #16213e; }
-  .status { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; display: none; }
+  .upload-zone .icon { font-size: 1.5rem; margin-bottom: 0.35rem; }
+  .upload-zone strong { font-size: 0.9rem; }
+  .upload-zone p { color: #64748b; margin-top: 0.25rem; font-size: 0.8rem; }
+  input[type="file"] { display: none; }
+
+  /* Simulate */
+  .sim-controls { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; }
+  .sim-controls input { width: 80px; padding: 0.4rem 0.6rem; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 0.85rem; outline: none; }
+  .sim-controls input:focus { border-color: #0ea5e9; }
+  .sim-btn { padding: 0.4rem 1rem; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
+  .sim-btn:hover { opacity: 0.9; }
+  .sim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .stop-btn { padding: 0.4rem 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; display: none; }
+  .stop-btn:hover { opacity: 0.9; }
+  .stop-btn.visible { display: inline-flex; }
+  .sim-label { color: #64748b; font-size: 0.8rem; }
+  .progress-wrap { display: none; margin-bottom: 0.75rem; }
+  .progress-wrap.active { display: block; }
+  .progress-bar-bg { background: #e2e8f0; border-radius: 999px; height: 6px; overflow: hidden; margin-bottom: 0.35rem; }
+  .progress-bar { background: linear-gradient(90deg, #7c3aed, #0ea5e9); height: 100%; border-radius: 999px; transition: width 0.3s; width: 0%; }
+  .progress-text { font-size: 0.75rem; color: #64748b; }
+  .sim-actions { display: flex; gap: 0.5rem; align-items: center; }
+  .clear-btn { padding: 0.35rem 0.9rem; background: none; color: #ef4444; border: 1.5px solid #ef4444; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+  .clear-btn:hover { background: #ef4444; color: white; }
+  .clear-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Status */
+  .status { padding: 0.6rem 0.9rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; display: none; }
   .status.success { display: block; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
   .status.error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
   .status.loading { display: block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-  .results { display: flex; flex-direction: column; gap: 1rem; }
-  .card { background: white; border-radius: 12px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
-  .card .name { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.25rem; }
-  .card .meta { color: #64748b; font-size: 0.85rem; margin-bottom: 0.5rem; }
-  .card .explanation { font-size: 0.9rem; margin-bottom: 0.75rem; line-height: 1.4; }
-  .skills { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-  .skill { background: #f0f9ff; color: #0369a1; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; border: 1px solid #bae6fd; }
-  .score { float: right; background: #1a1a2e; color: white; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
-  input[type="file"] { display: none; }
-  .section-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 0.75rem; }
-  .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
-  .filters select { padding: 0.5rem 0.75rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; outline: none; background: white; cursor: pointer; }
+
+  /* Search */
+  .search-section { background: white; border-radius: 12px; padding: 1.25rem; border: 1px solid #e2e8f0; margin-bottom: 1rem; }
+  .search-row { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
+  .search-row input { flex: 1; padding: 0.6rem 0.9rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+  .search-row input:focus { border-color: #0ea5e9; }
+  .search-row button { padding: 0.6rem 1.25rem; background: #1a1a2e; color: white; border: none; border-radius: 8px; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; font-weight: 600; }
+  .search-row button:hover { background: #16213e; }
+  .filters { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .filters select { padding: 0.4rem 0.6rem; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 0.8rem; outline: none; background: white; cursor: pointer; }
   .filters select:focus { border-color: #0ea5e9; }
-  .clearance-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; margin-left: 0.5rem; }
+
+  /* Results */
+  .results { display: flex; flex-direction: column; gap: 0.75rem; }
+  .card { background: white; border-radius: 12px; padding: 1.1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
+  .card .name { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.2rem; }
+  .card .meta { color: #64748b; font-size: 0.8rem; margin-bottom: 0.4rem; }
+  .card .explanation { font-size: 0.85rem; margin-bottom: 0.6rem; line-height: 1.4; }
+  .skills { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .skill { background: #f0f9ff; color: #0369a1; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.7rem; border: 1px solid #bae6fd; }
+  .score { float: right; background: #1a1a2e; color: white; padding: 0.1rem 0.45rem; border-radius: 5px; font-size: 0.7rem; }
+
+  /* Clearance badges */
+  .clearance-badge { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 4px; font-size: 0.65rem; font-weight: 600; margin-left: 0.4rem; }
   .clearance-ts-sci { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
   .clearance-ts { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
   .clearance-secret { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
   .clearance-confidential { background: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; }
   .clearance-public-trust { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
-  .sim-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1.5rem; }
-  .sim-row input { width: 100px; padding: 0.5rem 0.75rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; outline: none; }
-  .sim-row input:focus { border-color: #0ea5e9; }
-  .sim-btn { padding: 0.5rem 1.25rem; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: opacity 0.2s; }
-  .sim-btn:hover { opacity: 0.9; }
-  .sim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .sim-label { color: #64748b; font-size: 0.85rem; }
-  .progress-wrap { display: none; margin-bottom: 1.5rem; }
-  .progress-wrap.active { display: block; }
-  .progress-bar-bg { background: #e2e8f0; border-radius: 999px; height: 8px; overflow: hidden; margin-bottom: 0.5rem; }
-  .progress-bar { background: linear-gradient(90deg, #7c3aed, #0ea5e9); height: 100%; border-radius: 999px; transition: width 0.3s; width: 0%; }
-  .progress-text { font-size: 0.8rem; color: #64748b; }
 
   /* Chat panel */
   .chat-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 100; }
   .chat-overlay.open { display: block; }
-  .chat-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 440px; max-width: 100vw; background: white; box-shadow: -4px 0 24px rgba(0,0,0,0.15); z-index: 101; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s ease; }
+  .chat-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 420px; max-width: 100vw; background: white; box-shadow: -4px 0 24px rgba(0,0,0,0.15); z-index: 101; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s ease; }
   .chat-panel.open { transform: translateX(0); }
-  .chat-header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; }
-  .chat-header h2 { font-size: 1.1rem; font-weight: 600; }
-  .chat-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; line-height: 1; }
-  .chat-messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
-  .chat-msg { max-width: 90%; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.5; }
+  .chat-header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 0.9rem 1.1rem; display: flex; justify-content: space-between; align-items: center; }
+  .chat-header h2 { font-size: 1rem; font-weight: 600; }
+  .chat-close { background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer; line-height: 1; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .chat-msg { max-width: 90%; padding: 0.6rem 0.9rem; border-radius: 12px; font-size: 0.85rem; line-height: 1.5; }
   .chat-msg.user { align-self: flex-end; background: #1a1a2e; color: white; border-bottom-right-radius: 4px; }
   .chat-msg.ai { align-self: flex-start; background: #f0f9ff; color: #1a1a2e; border: 1px solid #bae6fd; border-bottom-left-radius: 4px; }
-  .chat-msg.ai .chat-candidates { margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
-  .chat-mini-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.5rem 0.75rem; font-size: 0.8rem; }
+  .chat-msg.ai .chat-candidates { margin-top: 0.6rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  .chat-mini-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.4rem 0.65rem; font-size: 0.75rem; }
   .chat-mini-card .name { font-weight: 600; }
-  .chat-mini-card .skills { margin-top: 0.25rem; }
-  .chat-input-row { display: flex; gap: 0.5rem; padding: 0.75rem 1rem; border-top: 1px solid #e2e8f0; background: #f8fafc; }
-  .chat-input-row input { flex: 1; padding: 0.6rem 0.75rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; outline: none; }
+  .chat-mini-card .skills { margin-top: 0.2rem; }
+  .chat-input-row { display: flex; gap: 0.5rem; padding: 0.65rem 0.9rem; border-top: 1px solid #e2e8f0; background: #f8fafc; }
+  .chat-input-row input { flex: 1; padding: 0.5rem 0.65rem; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 0.85rem; outline: none; }
   .chat-input-row input:focus { border-color: #0ea5e9; }
-  .chat-input-row button { padding: 0.6rem 1rem; background: #0ea5e9; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+  .chat-input-row button { padding: 0.5rem 0.9rem; background: #0ea5e9; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
   .chat-input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .chat-thinking { color: #64748b; font-style: italic; font-size: 0.85rem; padding: 0.5rem; }
-  .clear-btn { padding: 0.5rem 1.25rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: opacity 0.2s; }
-  .clear-btn:hover { opacity: 0.9; }
-  .clear-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .chat-thinking { color: #64748b; font-style: italic; font-size: 0.8rem; padding: 0.4rem; }
 
   /* Architecture page */
-  .arch-container { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
-  .arch-diagram { background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; margin-bottom: 2rem; }
+  .arch-container { max-width: 960px; margin: 1.5rem auto; padding: 0 1.5rem; }
+  .arch-diagram { background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; margin-bottom: 1.5rem; }
   .arch-diagram svg { width: 100%; height: auto; }
-  .arch-flow { display: flex; flex-direction: column; gap: 1.5rem; }
-  .arch-step { display: flex; gap: 1.25rem; align-items: flex-start; }
-  .arch-num { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
-  .arch-step-content h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
-  .arch-step-content p { font-size: 0.9rem; color: #64748b; line-height: 1.5; }
-  .arch-tech { display: inline-block; background: #f0f9ff; color: #0369a1; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 500; border: 1px solid #bae6fd; }
-  .arch-section { margin-bottom: 2rem; }
-  .arch-section h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; color: #1a1a2e; }
-  .arch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-  .arch-card { background: white; border-radius: 12px; padding: 1.25rem; border: 1px solid #e2e8f0; text-align: center; }
-  .arch-card h4 { font-size: 0.95rem; margin-bottom: 0.25rem; }
-  .arch-card p { font-size: 0.8rem; color: #64748b; }
-  .arch-card .arch-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+  .arch-flow { display: flex; flex-direction: column; gap: 1.25rem; }
+  .arch-step { display: flex; gap: 1rem; align-items: flex-start; }
+  .arch-num { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
+  .arch-step-content h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.2rem; }
+  .arch-step-content p { font-size: 0.85rem; color: #64748b; line-height: 1.5; }
+  .arch-tech { display: inline-block; background: #f0f9ff; color: #0369a1; padding: 0.05rem 0.4rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500; border: 1px solid #bae6fd; }
+  .arch-section { margin-bottom: 1.5rem; }
+  .arch-section h2 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.75rem; color: #1a1a2e; }
+  .arch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; }
+  .arch-card { background: white; border-radius: 12px; padding: 1rem; border: 1px solid #e2e8f0; text-align: center; }
+  .arch-card h4 { font-size: 0.85rem; margin-bottom: 0.2rem; }
+  .arch-card p { font-size: 0.75rem; color: #64748b; }
+  .arch-card .arch-icon { font-size: 1.3rem; margin-bottom: 0.4rem; }
 </style>
 </head>
 <body>
@@ -123,53 +151,65 @@
 </div>
 
 <div class="container page active" id="pageSearch">
-  <div class="upload-zone" id="dropZone">
-    <div class="icon">&#128196;</div>
-    <strong>Upload Resume</strong>
-    <p>Drag & drop a PDF or DOCX file, or click to browse</p>
-  </div>
-  <input type="file" id="fileInput" accept=".pdf,.docx,.doc">
+  <!-- Upload + Simulate side by side -->
+  <div class="top-row">
+    <div class="panel">
+      <div class="panel-title">Upload Resume</div>
+      <div class="upload-zone" id="dropZone">
+        <div class="icon">&#128196;</div>
+        <strong>Drag &amp; drop</strong>
+        <p>PDF or DOCX file, or click to browse</p>
+      </div>
+      <input type="file" id="fileInput" accept=".pdf,.docx,.doc">
+    </div>
 
-  <div class="section-label">Simulate Data</div>
-  <div class="sim-row">
-    <input type="number" id="simCount" value="1000" min="1" max="50000">
-    <button class="sim-btn" id="simBtn">Generate Mock Resumes</button>
-    <span class="sim-label">resumes to generate &amp; embed</span>
-    <button class="clear-btn" id="clearBtn">Clear All</button>
-  </div>
-  <div class="progress-wrap" id="progressWrap">
-    <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
-    <div class="progress-text" id="progressText"></div>
+    <div class="panel">
+      <div class="panel-title">Simulate Data</div>
+      <div class="sim-controls">
+        <input type="number" id="simCount" value="1000" min="1" max="50000">
+        <span class="sim-label">resumes</span>
+        <button class="sim-btn" id="simBtn">Generate</button>
+        <button class="stop-btn" id="stopBtn">Stop</button>
+      </div>
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="progress-text" id="progressText"></div>
+      </div>
+      <div class="sim-actions">
+        <button class="clear-btn" id="clearBtn">Clear All Candidates</button>
+      </div>
+    </div>
   </div>
 
   <div id="status" class="status"></div>
 
-  <div class="section-label">Search Candidates</div>
-  <div class="search-box">
-    <input type="text" id="searchInput" placeholder="e.g. senior Python developer with AWS experience">
-    <button id="searchBtn">Search</button>
-  </div>
-  <div class="filters">
-    <select id="clearanceFilter">
-      <option value="">Any Clearance</option>
-      <option value="Top Secret/SCI">Top Secret/SCI</option>
-      <option value="Top Secret">Top Secret</option>
-      <option value="Secret">Secret</option>
-      <option value="Confidential">Confidential</option>
-      <option value="Public Trust">Public Trust</option>
-    </select>
-    <select id="expFilter">
-      <option value="">Any Experience</option>
-      <option value="1-3">1-3 years</option>
-      <option value="4-7">4-7 years</option>
-      <option value="8-12">8-12 years</option>
-      <option value="13+">13+ years</option>
-    </select>
+  <!-- Search -->
+  <div class="search-section">
+    <div class="panel-title">Search Candidates</div>
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="e.g. senior Python developer with AWS experience">
+      <button id="searchBtn">Search</button>
+    </div>
+    <div class="filters">
+      <select id="clearanceFilter">
+        <option value="">Any Clearance</option>
+        <option value="Top Secret/SCI">Top Secret/SCI</option>
+        <option value="Top Secret">Top Secret</option>
+        <option value="Secret">Secret</option>
+        <option value="Confidential">Confidential</option>
+        <option value="Public Trust">Public Trust</option>
+      </select>
+      <select id="expFilter">
+        <option value="">Any Experience</option>
+        <option value="1-3">1-3 years</option>
+        <option value="4-7">4-7 years</option>
+        <option value="8-12">8-12 years</option>
+        <option value="13+">13+ years</option>
+      </select>
+    </div>
   </div>
 
   <div class="results" id="results"></div>
-</div>
-
 </div>
 
 <div class="arch-container page" id="pageArch">
@@ -177,46 +217,33 @@
     <h2>System Architecture</h2>
     <div class="arch-diagram">
       <svg viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" fill="none">
-        <!-- User -->
         <rect x="20" y="170" width="100" height="60" rx="10" fill="#1a1a2e"/>
         <text x="70" y="205" text-anchor="middle" fill="white" font-size="13" font-weight="600">User</text>
-        <!-- Arrow to UI -->
         <line x1="120" y1="200" x2="170" y2="200" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
-        <!-- UI -->
         <rect x="170" y="170" width="110" height="60" rx="10" fill="#0ea5e9"/>
         <text x="225" y="195" text-anchor="middle" fill="white" font-size="11" font-weight="600">HTML/JS UI</text>
         <text x="225" y="212" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="9">Single Page</text>
-        <!-- Arrow to API -->
         <line x1="280" y1="200" x2="330" y2="200" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
-        <!-- API -->
         <rect x="330" y="155" width="130" height="90" rx="10" fill="#7c3aed"/>
         <text x="395" y="185" text-anchor="middle" fill="white" font-size="11" font-weight="600">FastAPI</text>
         <text x="395" y="202" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="9">/ingest /search</text>
         <text x="395" y="217" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="9">/chat /simulate</text>
         <text x="395" y="237" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="9">Port 8000</text>
-        <!-- Arrow to Ollama -->
         <line x1="460" y1="175" x2="530" y2="100" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
-        <!-- Ollama -->
         <rect x="530" y="50" width="140" height="80" rx="10" fill="#f59e0b"/>
         <text x="600" y="80" text-anchor="middle" fill="white" font-size="11" font-weight="600">Ollama</text>
         <text x="600" y="97" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">llama3.1:8b (LLM)</text>
         <text x="600" y="112" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">nomic-embed-text</text>
-        <!-- Arrow to Postgres -->
         <line x1="460" y1="210" x2="530" y2="240" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
-        <!-- Postgres -->
         <rect x="530" y="210" width="140" height="70" rx="10" fill="#3b82f6"/>
         <text x="600" y="237" text-anchor="middle" fill="white" font-size="11" font-weight="600">PostgreSQL</text>
         <text x="600" y="254" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">pgvector + metadata</text>
         <text x="600" y="269" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">HNSW cosine index</text>
-        <!-- Arrow to MinIO -->
         <line x1="460" y1="230" x2="530" y2="340" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
-        <!-- MinIO -->
         <rect x="530" y="320" width="140" height="60" rx="10" fill="#ef4444"/>
         <text x="600" y="347" text-anchor="middle" fill="white" font-size="11" font-weight="600">MinIO</text>
         <text x="600" y="364" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">S3 object storage</text>
-        <!-- Arrowhead marker -->
         <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs>
-        <!-- Labels on arrows -->
         <text x="490" y="80" text-anchor="middle" fill="#64748b" font-size="8">embed + extract</text>
         <text x="505" y="230" text-anchor="middle" fill="#64748b" font-size="8">vectors + SQL</text>
         <text x="485" y="305" text-anchor="middle" fill="#64748b" font-size="8">raw files</text>
@@ -340,7 +367,6 @@ function showStatus(msg, type) {
   status.textContent = msg;
   status.className = 'status ' + type;
 }
-
 function hideStatus() { status.className = 'status'; }
 
 async function loadCount() {
@@ -359,6 +385,7 @@ function showPage(page) {
   document.getElementById('navArch').classList.toggle('active', page === 'arch');
 }
 
+// Upload
 dropZone.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
@@ -388,6 +415,7 @@ async function uploadFile(file) {
   fileInput.value = '';
 }
 
+// Search
 searchBtn.addEventListener('click', doSearch);
 searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
 
@@ -452,16 +480,16 @@ function escHtml(s) {
 clearanceFilter.addEventListener('change', () => { if (searchInput.value.trim()) doSearch(); });
 expFilter.addEventListener('change', () => { if (searchInput.value.trim()) doSearch(); });
 
-// Clear all candidates
+// Clear all
 const clearBtn = document.getElementById('clearBtn');
 clearBtn.addEventListener('click', async () => {
-  if (!confirm('Remove all candidates from the database?')) return;
+  if (!confirm('Remove all candidates and files from the database?')) return;
   clearBtn.disabled = true;
   try {
     const res = await fetch(API + '/api/candidates', { method: 'DELETE' });
     const data = await res.json();
     if (res.ok) {
-      showStatus('All candidates removed', 'success');
+      showStatus('All candidates and files removed', 'success');
       results.innerHTML = '';
       loadCount();
     } else {
@@ -475,14 +503,18 @@ clearBtn.addEventListener('click', async () => {
 
 // Simulation
 const simBtn = document.getElementById('simBtn');
+const stopBtn = document.getElementById('stopBtn');
 const simCount = document.getElementById('simCount');
 const progressWrap = document.getElementById('progressWrap');
 const progressBar = document.getElementById('progressBar');
 const progressText = document.getElementById('progressText');
+let simRunning = false;
 
 simBtn.addEventListener('click', async () => {
   const count = parseInt(simCount.value) || 1000;
   simBtn.disabled = true;
+  simRunning = true;
+  stopBtn.classList.add('visible');
   progressWrap.classList.add('active');
   progressBar.style.width = '0%';
   progressText.textContent = 'Starting simulation...';
@@ -503,12 +535,15 @@ simBtn.addEventListener('click', async () => {
         if (!line.startsWith('data: ')) continue;
         try {
           const evt = JSON.parse(line.slice(6));
-          if (evt.status === 'progress' || evt.status === 'complete') {
+          if (evt.status === 'progress' || evt.status === 'complete' || evt.status === 'stopped') {
             const pct = Math.round((evt.ingested / evt.total) * 100);
             progressBar.style.width = pct + '%';
             progressText.textContent = evt.ingested.toLocaleString() + ' / ' + evt.total.toLocaleString() + ' ingested' + (evt.errors ? ' (' + evt.errors + ' errors)' : '');
             if (evt.status === 'complete') {
-              progressText.textContent += ' -- Done!';
+              progressText.textContent += ' — Done!';
+              loadCount();
+            } else if (evt.status === 'stopped') {
+              progressText.textContent += ' — Stopped';
               loadCount();
             }
           } else if (evt.status === 'starting') {
@@ -518,9 +553,21 @@ simBtn.addEventListener('click', async () => {
       }
     }
   } catch(e) {
-    progressText.textContent = 'Simulation failed: ' + e.message;
+    if (simRunning) progressText.textContent = 'Simulation failed: ' + e.message;
   }
+  simRunning = false;
   simBtn.disabled = false;
+  stopBtn.classList.remove('visible');
+  loadCount();
+});
+
+stopBtn.addEventListener('click', async () => {
+  stopBtn.disabled = true;
+  progressText.textContent += ' — Stopping...';
+  try {
+    await fetch(API + '/api/simulate/stop', { method: 'POST' });
+  } catch(e) {}
+  stopBtn.disabled = false;
 });
 
 // Chat
@@ -548,13 +595,11 @@ async function sendChat() {
   chatInput.value = '';
   chatSend.disabled = true;
 
-  // User message
   const userDiv = document.createElement('div');
   userDiv.className = 'chat-msg user';
   userDiv.textContent = msg;
   chatMessages.appendChild(userDiv);
 
-  // Thinking indicator
   const thinking = document.createElement('div');
   thinking.className = 'chat-thinking';
   thinking.textContent = 'Searching candidates and thinking...';
@@ -579,7 +624,7 @@ async function sendChat() {
       html += '<div class="chat-candidates">';
       data.candidates.forEach(c => {
         html += `<div class="chat-mini-card">
-          <div class="name">${escHtml(c.name)}${clearanceBadge(c.clearance)} <span style="color:#64748b;font-size:0.75rem">${c.years_experience}y exp</span></div>
+          <div class="name">${escHtml(c.name)}${clearanceBadge(c.clearance)} <span style="color:#64748b;font-size:0.7rem">${c.years_experience}y exp</span></div>
           <div class="skills">${(c.skills||[]).slice(0,6).map(s=>'<span class="skill">'+escHtml(s)+'</span>').join('')}</div>
         </div>`;
       });

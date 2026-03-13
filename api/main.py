@@ -7,7 +7,7 @@ import os
 from db import init_db
 from ingest import ingest_resume
 from search import search_candidates, list_candidates, chat_with_candidates
-from simulate import run_simulation
+from simulate import run_simulation, stop_simulation
 
 app = FastAPI(title="TalentIQ", version="0.1.0")
 
@@ -109,6 +109,12 @@ async def simulate(count: int = Query(default=10000, ge=1, le=50000)):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+@app.post("/api/simulate/stop")
+async def simulate_stop():
+    stop_simulation()
+    return {"status": "ok", "message": "Simulation stop requested"}
 
 
 # Serve UI static files
