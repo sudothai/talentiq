@@ -9,3 +9,4 @@ data:
   MINIO_SECRET_KEY: "talentiq123"
   POSTGRES_URL: "postgresql://talentiq:talentiq123@postgres-svc.talentiq.svc.cluster.local:5432/talentiq"
   OLLAMA_BASE_URL: "http://ollama.radinsystems.svc.cluster.local:11434"
+  QDRANT_URL: "http://qdrant-svc.talentiq.svc.cluster.local:6333"

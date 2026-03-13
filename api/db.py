@@ -2,13 +2,18 @@ import os
 import psycopg2
 from psycopg2 import pool
 from contextlib import contextmanager
+from qdrant_client import QdrantClient
+from qdrant_client.models import VectorParams, Distance
 
 POSTGRES_URL = os.environ.get(
     "POSTGRES_URL",
     "postgresql://talentiq:talentiq123@localhost:5432/talentiq",
 )
 
+QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
+
 _pool = None
+_qdrant = None
 
 
 def get_pool():
@@ -32,10 +37,16 @@ def get_conn():
         p.putconn(conn)
 
 
+def get_qdrant() -> QdrantClient:
+    global _qdrant
+    if _qdrant is None:
+        _qdrant = QdrantClient(url=QDRANT_URL, timeout=60)
+    return _qdrant
+
+
 def init_db():
     with get_conn() as conn:
         cur = conn.cursor()
-        cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
         cur.execute("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
         cur.execute("""
             CREATE TABLE IF NOT EXISTS candidates (
@@ -52,21 +63,6 @@ def init_db():
                 created_at TIMESTAMP DEFAULT NOW()
             );
         """)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS resume_chunks (
-                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                candidate_id UUID REFERENCES candidates(id),
-                chunk_text TEXT,
-                embedding vector(768),
-                section TEXT,
-                created_at TIMESTAMP DEFAULT NOW()
-            );
-        """)
-        # Use HNSW index instead of IVFFlat — works on empty tables
-        cur.execute("""
-            CREATE INDEX IF NOT EXISTS idx_resume_chunks_embedding
-            ON resume_chunks USING hnsw (embedding vector_cosine_ops);
-        """)
         # Migration: add clearance column if missing
         cur.execute("""
             DO $$
@@ -80,3 +76,16 @@ def init_db():
             END $$;
         """)
         conn.commit()
+
+
+def init_qdrant():
+    client = get_qdrant()
+    collections = [c.name for c in client.get_collections().collections]
+    if "resume_chunks" not in collections:
+        client.create_collection(
+            collection_name="resume_chunks",
+            vectors_config=VectorParams(
+                size=768,
+                distance=Distance.COSINE,
+            ),
+        )

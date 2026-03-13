@@ -234,19 +234,24 @@
         <text x="600" y="80" text-anchor="middle" fill="white" font-size="11" font-weight="600">Ollama</text>
         <text x="600" y="97" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">llama3.1:8b (LLM)</text>
         <text x="600" y="112" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">nomic-embed-text</text>
-        <line x1="460" y1="210" x2="530" y2="240" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
-        <rect x="530" y="210" width="140" height="70" rx="10" fill="#3b82f6"/>
-        <text x="600" y="237" text-anchor="middle" fill="white" font-size="11" font-weight="600">PostgreSQL</text>
-        <text x="600" y="254" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">pgvector + metadata</text>
-        <text x="600" y="269" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">HNSW cosine index</text>
-        <line x1="460" y1="230" x2="530" y2="340" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
-        <rect x="530" y="320" width="140" height="60" rx="10" fill="#ef4444"/>
-        <text x="600" y="347" text-anchor="middle" fill="white" font-size="11" font-weight="600">MinIO</text>
-        <text x="600" y="364" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">S3 object storage</text>
+        <line x1="460" y1="195" x2="530" y2="175" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+        <rect x="530" y="145" width="140" height="70" rx="10" fill="#dc2626"/>
+        <text x="600" y="172" text-anchor="middle" fill="white" font-size="11" font-weight="600">Qdrant</text>
+        <text x="600" y="189" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">Vector database</text>
+        <text x="600" y="204" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">768-dim cosine search</text>
+        <line x1="460" y1="220" x2="530" y2="260" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+        <rect x="530" y="240" width="140" height="60" rx="10" fill="#3b82f6"/>
+        <text x="600" y="265" text-anchor="middle" fill="white" font-size="11" font-weight="600">PostgreSQL</text>
+        <text x="600" y="282" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">Candidate metadata</text>
+        <line x1="460" y1="240" x2="530" y2="350" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+        <rect x="530" y="330" width="140" height="60" rx="10" fill="#f59e0b"/>
+        <text x="600" y="357" text-anchor="middle" fill="white" font-size="11" font-weight="600">MinIO</text>
+        <text x="600" y="374" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">S3 object storage</text>
         <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs>
-        <text x="490" y="80" text-anchor="middle" fill="#64748b" font-size="8">embed + extract</text>
-        <text x="505" y="230" text-anchor="middle" fill="#64748b" font-size="8">vectors + SQL</text>
-        <text x="485" y="305" text-anchor="middle" fill="#64748b" font-size="8">raw files</text>
+        <text x="490" y="68" text-anchor="middle" fill="#64748b" font-size="8">embed + extract</text>
+        <text x="490" y="172" text-anchor="middle" fill="#64748b" font-size="8">vectors</text>
+        <text x="498" y="248" text-anchor="middle" fill="#64748b" font-size="8">metadata</text>
+        <text x="485" y="315" text-anchor="middle" fill="#64748b" font-size="8">raw files</text>
         <text x="300" y="193" text-anchor="middle" fill="#64748b" font-size="8">REST</text>
       </svg>
     </div>
@@ -262,8 +267,13 @@
       </div>
       <div class="arch-card">
         <div class="arch-icon">&#128451;</div>
-        <h4>PostgreSQL + pgvector</h4>
-        <p>Vector store with HNSW cosine index for similarity search + structured metadata</p>
+        <h4>Qdrant</h4>
+        <p>Purpose-built vector database for 768-dim cosine similarity search with payload filtering</p>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">&#128450;</div>
+        <h4>PostgreSQL</h4>
+        <p>Relational database for candidate metadata, skills, clearance, and structured queries</p>
       </div>
       <div class="arch-card">
         <div class="arch-icon">&#128230;</div>
@@ -316,14 +326,14 @@
         <div class="arch-num">4</div>
         <div class="arch-step-content">
           <h3>Store</h3>
-          <p>Vectors stored in <span class="arch-tech">pgvector</span> with HNSW cosine index. Metadata (skills, clearance, etc.) in PostgreSQL. Extracted JSON saved to MinIO.</p>
+          <p>Vectors stored in <span class="arch-tech">Qdrant</span> vector database with cosine distance. Metadata (skills, clearance, etc.) in <span class="arch-tech">PostgreSQL</span>. Extracted JSON saved to MinIO.</p>
         </div>
       </div>
       <div class="arch-step">
         <div class="arch-num">5</div>
         <div class="arch-step-content">
           <h3>Search &amp; Retrieve</h3>
-          <p>User query embedded with same model. Cosine similarity search against all resume chunks. Top 20 candidates retrieved with optional clearance/experience filters.</p>
+          <p>User query embedded with same model. <span class="arch-tech">Qdrant</span> cosine similarity search against all resume chunks. Top 20 candidates joined with PostgreSQL metadata and filtered by clearance/experience.</p>
         </div>
       </div>
       <div class="arch-step">

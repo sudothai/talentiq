@@ -9,8 +9,9 @@ from docx import Document
 from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-from db import get_conn
+from db import get_conn, get_qdrant
 from ingest import embed_text, get_minio, ensure_bucket
+from qdrant_client.models import PointStruct
 
 _simulation_stop = False
 
@@ -376,7 +377,7 @@ async def run_simulation(count: int = 10000) -> AsyncGenerator[str, None]:
                 processed_bytes = json.dumps(extracted, indent=2).encode()
                 mc.put_object(BUCKET, processed_path, io.BytesIO(processed_bytes), len(processed_bytes))
 
-                # Insert candidate
+                # Insert candidate into Postgres
                 with get_conn() as conn:
                     cur = conn.cursor()
                     cur.execute(
@@ -397,19 +398,28 @@ async def run_simulation(count: int = 10000) -> AsyncGenerator[str, None]:
                             processed_path,
                         ),
                     )
-
-                    # Embed and store chunks
-                    for section_name, section_text in candidate["sections"].items():
-                        if not section_text.strip():
-                            continue
-                        embedding = embed_text(section_text[:2000])
-                        cur.execute(
-                            """INSERT INTO resume_chunks
-                               (candidate_id, chunk_text, embedding, section)
-                               VALUES (%s, %s, %s::vector, %s)""",
-                            (candidate_id, section_text, str(embedding), section_name),
-                        )
                     conn.commit()
+
+                # Embed and store chunks in Qdrant
+                qdrant = get_qdrant()
+                points = []
+                for section_name, section_text in candidate["sections"].items():
+                    if not section_text.strip():
+                        continue
+                    embedding = embed_text(section_text[:2000])
+                    points.append(
+                        PointStruct(
+                            id=str(uuid.uuid4()),
+                            vector=embedding,
+                            payload={
+                                "candidate_id": candidate_id,
+                                "chunk_text": section_text,
+                                "section": section_name,
+                            },
+                        )
+                    )
+                if points:
+                    qdrant.upsert(collection_name="resume_chunks", points=points)
 
                 ingested += 1
             except Exception as e:

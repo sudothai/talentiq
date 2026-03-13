@@ -9,7 +9,8 @@ import pdfplumber
 from docx import Document
 from minio import Minio
 
-from db import get_conn
+from db import get_conn, get_qdrant
+from qdrant_client.models import PointStruct
 
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 MINIO_ENDPOINT = os.environ.get("MINIO_ENDPOINT", "localhost:9000")
@@ -169,18 +170,27 @@ async def ingest_resume(filename: str, data: bytes) -> dict:
             ),
         )
 
-        # Chunk, embed, and store
-        chunks = chunk_resume(text)
-        for chunk in chunks:
-            embedding = embed_text(chunk["text"][:2000])
-            cur.execute(
-                """INSERT INTO resume_chunks
-                   (candidate_id, chunk_text, embedding, section)
-                   VALUES (%s, %s, %s::vector, %s)""",
-                (candidate_id, chunk["text"], str(embedding), chunk["section"]),
-            )
-
         conn.commit()
+
+    # Chunk, embed, and store in Qdrant
+    chunks = chunk_resume(text)
+    qdrant = get_qdrant()
+    points = []
+    for chunk in chunks:
+        embedding = embed_text(chunk["text"][:2000])
+        points.append(
+            PointStruct(
+                id=str(uuid.uuid4()),
+                vector=embedding,
+                payload={
+                    "candidate_id": candidate_id,
+                    "chunk_text": chunk["text"],
+                    "section": chunk["section"],
+                },
+            )
+        )
+    if points:
+        qdrant.upsert(collection_name="resume_chunks", points=points)
 
     return {
         "candidate_id": candidate_id,

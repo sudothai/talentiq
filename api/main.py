@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 
-from db import init_db
+from db import init_db, init_qdrant
 from ingest import ingest_resume
 from search import search_candidates, list_candidates, chat_with_candidates
 from simulate import run_simulation, stop_simulation
@@ -22,6 +22,7 @@ app.add_middleware(
 @app.on_event("startup")
 def startup():
     init_db()
+    init_qdrant()
 
 
 @app.post("/api/ingest")
@@ -80,9 +81,17 @@ async def clear_candidates():
                 for err in errors:
                     pass  # best-effort cleanup
 
+        # Clear Qdrant collection
+        from db import get_qdrant
+        qdrant = get_qdrant()
+        try:
+            qdrant.delete_collection("resume_chunks")
+        except Exception:
+            pass
+        init_qdrant()
+
         with get_conn() as conn:
             cur = conn.cursor()
-            cur.execute("DELETE FROM resume_chunks")
             cur.execute("DELETE FROM candidates")
             conn.commit()
         return {"status": "ok", "message": "All candidates and files removed"}

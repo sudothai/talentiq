@@ -4,7 +4,7 @@ import traceback
 
 import httpx
 
-from db import get_conn
+from db import get_conn, get_qdrant
 
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 
@@ -50,10 +50,37 @@ def strip_json(text: str) -> str:
 
 
 def _vector_search(query_embedding, clearance="", min_exp=0, max_exp=99, limit=20):
-    """Run vector similarity search with optional filters."""
-    emb = str(query_embedding)
+    """Search Qdrant for similar vectors, then join with Postgres for metadata + filters."""
+    qdrant = get_qdrant()
+
+    # Over-fetch from Qdrant since we'll deduplicate by candidate and apply filters
+    qdrant_results = qdrant.search(
+        collection_name="resume_chunks",
+        query_vector=query_embedding,
+        limit=limit * 5,
+    )
+
+    if not qdrant_results:
+        return []
+
+    # Deduplicate: keep best score per candidate
+    candidate_scores = {}
+    for hit in qdrant_results:
+        cid = hit.payload["candidate_id"]
+        if cid not in candidate_scores or hit.score > candidate_scores[cid]:
+            candidate_scores[cid] = hit.score
+
+    candidate_ids = list(candidate_scores.keys())
+    if not candidate_ids:
+        return []
+
+    # Query Postgres for metadata with filters
     filters = []
     filter_params = []
+
+    placeholders = ",".join(["%s"] * len(candidate_ids))
+    filters.append(f"c.id IN ({placeholders})")
+    filter_params.extend(candidate_ids)
 
     if clearance:
         filters.append("c.clearance = %s")
@@ -65,32 +92,28 @@ def _vector_search(query_embedding, clearance="", min_exp=0, max_exp=99, limit=2
         filters.append("c.years_experience <= %s")
         filter_params.append(max_exp)
 
-    where_clause = ""
-    if filters:
-        where_clause = "WHERE " + " AND ".join(filters)
-
-    # Parameter order must match SQL placeholder order:
-    # 1st %s = SELECT embedding, 2nd+ = WHERE filters, last %s = ORDER BY embedding
-    params = [emb] + filter_params + [emb]
+    where_clause = "WHERE " + " AND ".join(filters)
 
     with get_conn() as conn:
         cur = conn.cursor()
         cur.execute(
-            f"""
-            SELECT DISTINCT ON (c.id)
-                c.id, c.name, c.skills, c.years_experience, c.titles,
-                1 - (rc.embedding <=> %s::vector) AS score, c.clearance
-            FROM resume_chunks rc
-            JOIN candidates c ON c.id = rc.candidate_id
-            {where_clause}
-            ORDER BY c.id, rc.embedding <=> %s::vector
-            """,
-            params,
+            f"""SELECT c.id, c.name, c.skills, c.years_experience, c.titles, c.clearance
+                FROM candidates c
+                {where_clause}""",
+            filter_params,
         )
         rows = cur.fetchall()
 
-    rows.sort(key=lambda r: r[5], reverse=True)
-    return rows[:limit]
+    # Merge Qdrant scores with Postgres rows
+    results = []
+    for row in rows:
+        cid = str(row[0])
+        score = candidate_scores.get(cid, 0.0)
+        # Return same tuple format: (id, name, skills, years_exp, titles, score, clearance)
+        results.append((row[0], row[1], row[2], row[3], row[4], score, row[5]))
+
+    results.sort(key=lambda r: r[5], reverse=True)
+    return results[:limit]
 
 
 def _row_to_result(row, explanation=""):
