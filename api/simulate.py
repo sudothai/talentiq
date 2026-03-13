@@ -4,6 +4,11 @@ import random
 import uuid
 from typing import AsyncGenerator
 
+from fpdf import FPDF
+from docx import Document
+from docx.shared import Pt, Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+
 from db import get_conn
 from ingest import embed_text, get_minio, ensure_bucket
 
@@ -140,6 +145,88 @@ ACHIEVEMENTS = [
 ]
 
 
+def _generate_pdf(candidate: dict) -> bytes:
+    """Generate a PDF resume from candidate data."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+
+    # Header - name
+    pdf.set_font("Helvetica", "B", 16)
+    pdf.cell(0, 10, candidate["name"], new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(0, 5, candidate["email"], new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(5)
+
+    for section_name, section_text in candidate["sections"].items():
+        if section_name == "header":
+            continue
+        lines = section_text.split("\n")
+        # Section heading
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.cell(0, 8, lines[0] if lines else section_name.title(), new_x="LMARGIN", new_y="NEXT")
+        pdf.set_draw_color(100, 100, 100)
+        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+        pdf.ln(2)
+        # Section body
+        pdf.set_font("Helvetica", "", 10)
+        for line in lines[1:]:
+            if not line.strip():
+                pdf.ln(3)
+                continue
+            pdf.multi_cell(0, 5, line.encode("latin-1", "replace").decode("latin-1"))
+
+        pdf.ln(4)
+
+    return bytes(pdf.output())
+
+
+def _generate_docx(candidate: dict) -> bytes:
+    """Generate a DOCX resume from candidate data."""
+    doc = Document()
+
+    # Narrow margins
+    for section in doc.sections:
+        section.top_margin = Inches(0.5)
+        section.bottom_margin = Inches(0.5)
+        section.left_margin = Inches(0.75)
+        section.right_margin = Inches(0.75)
+
+    # Name header
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p.add_run(candidate["name"])
+    run.bold = True
+    run.font.size = Pt(18)
+
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p.add_run(candidate["email"])
+    run.font.size = Pt(10)
+
+    for section_name, section_text in candidate["sections"].items():
+        if section_name == "header":
+            continue
+        lines = section_text.split("\n")
+
+        # Section heading
+        heading = doc.add_heading(lines[0] if lines else section_name.title(), level=2)
+        heading.runs[0].font.size = Pt(13)
+
+        # Section body
+        for line in lines[1:]:
+            if not line.strip():
+                continue
+            p = doc.add_paragraph(line)
+            p.paragraph_format.space_after = Pt(2)
+            for run in p.runs:
+                run.font.size = Pt(10)
+
+    buf = io.BytesIO()
+    doc.save(buf)
+    return buf.getvalue()
+
+
 def _rand_achievement() -> str:
     tmpl = random.choice(ACHIEVEMENTS)
     return tmpl.format(
@@ -247,10 +334,17 @@ async def run_simulation(count: int = 10000) -> AsyncGenerator[str, None]:
 
         for candidate_id, candidate in batch_candidates:
             try:
-                # Save raw resume text to MinIO
-                raw_path = f"raw/{candidate_id}/resume.txt"
-                raw_bytes = candidate["text"].encode()
-                mc.put_object(BUCKET, raw_path, io.BytesIO(raw_bytes), len(raw_bytes))
+                # Save raw resume as PDF or DOCX to MinIO
+                fmt = random.choice(["pdf", "docx"])
+                if fmt == "pdf":
+                    raw_bytes = _generate_pdf(candidate)
+                    raw_path = f"raw/{candidate_id}/resume.pdf"
+                    content_type = "application/pdf"
+                else:
+                    raw_bytes = _generate_docx(candidate)
+                    raw_path = f"raw/{candidate_id}/resume.docx"
+                    content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                mc.put_object(BUCKET, raw_path, io.BytesIO(raw_bytes), len(raw_bytes), content_type=content_type)
 
                 # Save processed JSON to MinIO
                 processed_path = f"processed/{candidate_id}/extracted.json"
