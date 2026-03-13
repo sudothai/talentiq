@@ -66,12 +66,26 @@ async def candidates_count():
 async def clear_candidates():
     try:
         from db import get_conn
+        from ingest import get_minio
+        from minio.deleteobjects import DeleteObject
+
+        # Remove all objects from the resumes bucket in MinIO
+        mc = get_minio()
+        bucket = "resumes"
+        if mc.bucket_exists(bucket):
+            objects = mc.list_objects(bucket, recursive=True)
+            delete_list = [DeleteObject(obj.object_name) for obj in objects]
+            if delete_list:
+                errors = mc.remove_objects(bucket, delete_list)
+                for err in errors:
+                    pass  # best-effort cleanup
+
         with get_conn() as conn:
             cur = conn.cursor()
             cur.execute("DELETE FROM resume_chunks")
             cur.execute("DELETE FROM candidates")
             conn.commit()
-        return {"status": "ok", "message": "All candidates removed"}
+        return {"status": "ok", "message": "All candidates and files removed"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
