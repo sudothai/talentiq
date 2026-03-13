@@ -10,13 +10,16 @@
   .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; }
   .header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px; }
   .header h1 span { color: #0ea5e9; }
+  .header-right { display: flex; align-items: center; gap: 0.75rem; }
   .badge { background: rgba(14, 165, 233, 0.2); color: #0ea5e9; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.8rem; }
+  .chat-toggle { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; border: none; padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 600; }
+  .chat-toggle:hover { opacity: 0.9; }
   .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
   .upload-zone { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 2.5rem; text-align: center; background: white; cursor: pointer; transition: all 0.2s; margin-bottom: 1.5rem; }
   .upload-zone:hover, .upload-zone.dragover { border-color: #0ea5e9; background: #f0f9ff; }
   .upload-zone p { color: #64748b; margin-top: 0.5rem; font-size: 0.9rem; }
   .upload-zone .icon { font-size: 2rem; margin-bottom: 0.5rem; }
-  .search-box { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .search-box { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
   .search-box input { flex: 1; padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.2s; }
   .search-box input:focus { border-color: #0ea5e9; }
   .search-box button { padding: 0.75rem 1.5rem; background: #1a1a2e; color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
@@ -35,7 +38,7 @@
   .score { float: right; background: #1a1a2e; color: white; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
   input[type="file"] { display: none; }
   .section-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 0.75rem; }
-  .filters { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+  .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
   .filters select { padding: 0.5rem 0.75rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; outline: none; background: white; cursor: pointer; }
   .filters select:focus { border-color: #0ea5e9; }
   .clearance-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; margin-left: 0.5rem; }
@@ -56,13 +59,39 @@
   .progress-bar-bg { background: #e2e8f0; border-radius: 999px; height: 8px; overflow: hidden; margin-bottom: 0.5rem; }
   .progress-bar { background: linear-gradient(90deg, #7c3aed, #0ea5e9); height: 100%; border-radius: 999px; transition: width 0.3s; width: 0%; }
   .progress-text { font-size: 0.8rem; color: #64748b; }
+
+  /* Chat panel */
+  .chat-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 100; }
+  .chat-overlay.open { display: block; }
+  .chat-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 440px; max-width: 100vw; background: white; box-shadow: -4px 0 24px rgba(0,0,0,0.15); z-index: 101; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s ease; }
+  .chat-panel.open { transform: translateX(0); }
+  .chat-header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; }
+  .chat-header h2 { font-size: 1.1rem; font-weight: 600; }
+  .chat-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; line-height: 1; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .chat-msg { max-width: 90%; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.5; }
+  .chat-msg.user { align-self: flex-end; background: #1a1a2e; color: white; border-bottom-right-radius: 4px; }
+  .chat-msg.ai { align-self: flex-start; background: #f0f9ff; color: #1a1a2e; border: 1px solid #bae6fd; border-bottom-left-radius: 4px; }
+  .chat-msg.ai .chat-candidates { margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .chat-mini-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.5rem 0.75rem; font-size: 0.8rem; }
+  .chat-mini-card .name { font-weight: 600; }
+  .chat-mini-card .skills { margin-top: 0.25rem; }
+  .chat-input-row { display: flex; gap: 0.5rem; padding: 0.75rem 1rem; border-top: 1px solid #e2e8f0; background: #f8fafc; }
+  .chat-input-row input { flex: 1; padding: 0.6rem 0.75rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; outline: none; }
+  .chat-input-row input:focus { border-color: #0ea5e9; }
+  .chat-input-row button { padding: 0.6rem 1rem; background: #0ea5e9; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+  .chat-input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .chat-thinking { color: #64748b; font-style: italic; font-size: 0.85rem; padding: 0.5rem; }
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>Talent<span>IQ</span></h1>
-  <div class="badge" id="count">0 candidates</div>
+  <div class="header-right">
+    <div class="badge" id="count">0 candidates</div>
+    <button class="chat-toggle" id="chatToggle">Ask TalentIQ</button>
+  </div>
 </div>
 
 <div class="container">
@@ -110,6 +139,22 @@
   </div>
 
   <div class="results" id="results"></div>
+</div>
+
+<!-- Chat Panel -->
+<div class="chat-overlay" id="chatOverlay"></div>
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-header">
+    <h2>TalentIQ Assistant</h2>
+    <button class="chat-close" id="chatClose">&times;</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-msg ai">Hi! I'm TalentIQ. Ask me anything about your candidate pool — "Who are the best Python developers with Top Secret clearance?" or "Find me a senior DevOps engineer with Kubernetes experience."</div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="Ask about candidates...">
+    <button id="chatSend">Send</button>
+  </div>
 </div>
 
 <script>
@@ -178,6 +223,21 @@ function clearanceBadge(c) {
   return '<span class="clearance-badge clearance-' + cls + '">' + escHtml(c) + '</span>';
 }
 
+function renderCandidateCards(data, container) {
+  data.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <span class="score">${c.score}</span>
+      <div class="name">${escHtml(c.name)}${clearanceBadge(c.clearance)}</div>
+      <div class="meta">${c.years_experience || '?'} years experience</div>
+      ${c.explanation ? '<div class="explanation">' + escHtml(c.explanation) + '</div>' : ''}
+      <div class="skills">${(c.skills || []).map(s => '<span class="skill">' + escHtml(s) + '</span>').join('')}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
 async function doSearch() {
   const q = searchInput.value.trim();
   if (!q) return;
@@ -194,22 +254,12 @@ async function doSearch() {
     const res = await fetch(url);
     const data = await res.json();
     hideStatus();
+    if (data.error) { showStatus('Error: ' + data.error, 'error'); return; }
     if (!data.length) {
       results.innerHTML = '<div class="card"><p>No matching candidates found.</p></div>';
       return;
     }
-    data.forEach((c, i) => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <span class="score">${c.score}</span>
-        <div class="name">${escHtml(c.name)}${clearanceBadge(c.clearance)}</div>
-        <div class="meta">${c.years_experience || '?'} years experience</div>
-        <div class="explanation">${escHtml(c.explanation)}</div>
-        <div class="skills">${(c.skills || []).map(s => '<span class="skill">' + escHtml(s) + '</span>').join('')}</div>
-      `;
-      results.appendChild(card);
-    });
+    renderCandidateCards(data, results);
   } catch(e) {
     showStatus('Search failed: ' + e.message, 'error');
   }
@@ -221,6 +271,7 @@ function escHtml(s) {
   return d.innerHTML;
 }
 
+// Simulation
 const simBtn = document.getElementById('simBtn');
 const simCount = document.getElementById('simCount');
 const progressWrap = document.getElementById('progressWrap');
@@ -228,7 +279,7 @@ const progressBar = document.getElementById('progressBar');
 const progressText = document.getElementById('progressText');
 
 simBtn.addEventListener('click', async () => {
-  const count = parseInt(simCount.value) || 10000;
+  const count = parseInt(simCount.value) || 1000;
   simBtn.disabled = true;
   progressWrap.classList.add('active');
   progressBar.style.width = '0%';
@@ -255,7 +306,7 @@ simBtn.addEventListener('click', async () => {
             progressBar.style.width = pct + '%';
             progressText.textContent = evt.ingested.toLocaleString() + ' / ' + evt.total.toLocaleString() + ' ingested' + (evt.errors ? ' (' + evt.errors + ' errors)' : '');
             if (evt.status === 'complete') {
-              progressText.textContent += ' — Done!';
+              progressText.textContent += ' -- Done!';
               loadCount();
             }
           } else if (evt.status === 'starting') {
@@ -269,6 +320,83 @@ simBtn.addEventListener('click', async () => {
   }
   simBtn.disabled = false;
 });
+
+// Chat
+const chatToggle = document.getElementById('chatToggle');
+const chatPanel = document.getElementById('chatPanel');
+const chatOverlay = document.getElementById('chatOverlay');
+const chatClose = document.getElementById('chatClose');
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const chatSend = document.getElementById('chatSend');
+
+function openChat() { chatPanel.classList.add('open'); chatOverlay.classList.add('open'); chatInput.focus(); }
+function closeChat() { chatPanel.classList.remove('open'); chatOverlay.classList.remove('open'); }
+
+chatToggle.addEventListener('click', openChat);
+chatClose.addEventListener('click', closeChat);
+chatOverlay.addEventListener('click', closeChat);
+
+chatSend.addEventListener('click', sendChat);
+chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendChat(); });
+
+async function sendChat() {
+  const msg = chatInput.value.trim();
+  if (!msg) return;
+  chatInput.value = '';
+  chatSend.disabled = true;
+
+  // User message
+  const userDiv = document.createElement('div');
+  userDiv.className = 'chat-msg user';
+  userDiv.textContent = msg;
+  chatMessages.appendChild(userDiv);
+
+  // Thinking indicator
+  const thinking = document.createElement('div');
+  thinking.className = 'chat-thinking';
+  thinking.textContent = 'Searching candidates and thinking...';
+  chatMessages.appendChild(thinking);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  try {
+    const res = await fetch(API + '/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg }),
+    });
+    const data = await res.json();
+    thinking.remove();
+
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'chat-msg ai';
+
+    let html = escHtml(data.response || data.error || 'No response').replace(/\n/g, '<br>');
+
+    if (data.candidates && data.candidates.length) {
+      html += '<div class="chat-candidates">';
+      data.candidates.forEach(c => {
+        html += `<div class="chat-mini-card">
+          <div class="name">${escHtml(c.name)}${clearanceBadge(c.clearance)} <span style="color:#64748b;font-size:0.75rem">${c.years_experience}y exp</span></div>
+          <div class="skills">${(c.skills||[]).slice(0,6).map(s=>'<span class="skill">'+escHtml(s)+'</span>').join('')}</div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    aiDiv.innerHTML = html;
+    chatMessages.appendChild(aiDiv);
+  } catch(e) {
+    thinking.remove();
+    const errDiv = document.createElement('div');
+    errDiv.className = 'chat-msg ai';
+    errDiv.textContent = 'Sorry, something went wrong: ' + e.message;
+    chatMessages.appendChild(errDiv);
+  }
+
+  chatSend.disabled = false;
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
 loadCount();
 </script>

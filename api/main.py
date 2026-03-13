@@ -6,7 +6,7 @@ import os
 
 from db import init_db
 from ingest import ingest_resume
-from search import search_candidates, list_candidates
+from search import search_candidates, list_candidates, chat_with_candidates
 from simulate import run_simulation
 
 app = FastAPI(title="TalentIQ", version="0.1.0")
@@ -50,6 +50,18 @@ async def search(
 @app.get("/api/candidates")
 async def candidates():
     return await list_candidates()
+
+
+@app.post("/api/chat")
+async def chat(body: dict):
+    message = body.get("message", "").strip()
+    if not message:
+        return JSONResponse(status_code=400, content={"error": "Message required"})
+    try:
+        result = await chat_with_candidates(message)
+        return result
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @app.post("/api/simulate")
