@@ -82,6 +82,9 @@
   .chat-input-row button { padding: 0.6rem 1rem; background: #0ea5e9; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
   .chat-input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
   .chat-thinking { color: #64748b; font-style: italic; font-size: 0.85rem; padding: 0.5rem; }
+  .clear-btn { padding: 0.5rem 1.25rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: opacity 0.2s; }
+  .clear-btn:hover { opacity: 0.9; }
+  .clear-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>
 </head>
 <body>
@@ -107,6 +110,7 @@
     <input type="number" id="simCount" value="1000" min="1" max="50000">
     <button class="sim-btn" id="simBtn">Generate Mock Resumes</button>
     <span class="sim-label">resumes to generate &amp; embed</span>
+    <button class="clear-btn" id="clearBtn">Clear All</button>
   </div>
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
@@ -270,6 +274,31 @@ function escHtml(s) {
   d.textContent = s;
   return d.innerHTML;
 }
+
+// Auto-search on filter change
+clearanceFilter.addEventListener('change', () => { if (searchInput.value.trim()) doSearch(); });
+expFilter.addEventListener('change', () => { if (searchInput.value.trim()) doSearch(); });
+
+// Clear all candidates
+const clearBtn = document.getElementById('clearBtn');
+clearBtn.addEventListener('click', async () => {
+  if (!confirm('Remove all candidates from the database?')) return;
+  clearBtn.disabled = true;
+  try {
+    const res = await fetch(API + '/api/candidates', { method: 'DELETE' });
+    const data = await res.json();
+    if (res.ok) {
+      showStatus('All candidates removed', 'success');
+      results.innerHTML = '';
+      loadCount();
+    } else {
+      showStatus('Error: ' + (data.error || 'Unknown'), 'error');
+    }
+  } catch(e) {
+    showStatus('Failed: ' + e.message, 'error');
+  }
+  clearBtn.disabled = false;
+});
 
 // Simulation
 const simBtn = document.getElementById('simBtn');

@@ -52,6 +52,20 @@ async def candidates():
     return await list_candidates()
 
 
+@app.delete("/api/candidates")
+async def clear_candidates():
+    try:
+        from db import get_conn
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM resume_chunks")
+            cur.execute("DELETE FROM candidates")
+            conn.commit()
+        return {"status": "ok", "message": "All candidates removed"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
 @app.post("/api/chat")
 async def chat(body: dict):
     message = body.get("message", "").strip()

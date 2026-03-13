@@ -51,22 +51,27 @@ def strip_json(text: str) -> str:
 
 def _vector_search(query_embedding, clearance="", min_exp=0, max_exp=99, limit=20):
     """Run vector similarity search with optional filters."""
+    emb = str(query_embedding)
     filters = []
-    params = [str(query_embedding), str(query_embedding)]
+    filter_params = []
 
     if clearance:
         filters.append("c.clearance = %s")
-        params.append(clearance)
+        filter_params.append(clearance)
     if min_exp > 0:
         filters.append("c.years_experience >= %s")
-        params.append(min_exp)
+        filter_params.append(min_exp)
     if max_exp < 99:
         filters.append("c.years_experience <= %s")
-        params.append(max_exp)
+        filter_params.append(max_exp)
 
     where_clause = ""
     if filters:
         where_clause = "WHERE " + " AND ".join(filters)
+
+    # Parameter order must match SQL placeholder order:
+    # 1st %s = SELECT embedding, 2nd+ = WHERE filters, last %s = ORDER BY embedding
+    params = [emb] + filter_params + [emb]
 
     with get_conn() as conn:
         cur = conn.cursor()
