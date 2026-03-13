@@ -247,6 +247,11 @@ async def run_simulation(count: int = 10000) -> AsyncGenerator[str, None]:
 
         for candidate_id, candidate in batch_candidates:
             try:
+                # Save raw resume text to MinIO
+                raw_path = f"raw/{candidate_id}/resume.txt"
+                raw_bytes = candidate["text"].encode()
+                mc.put_object(BUCKET, raw_path, io.BytesIO(raw_bytes), len(raw_bytes))
+
                 # Save processed JSON to MinIO
                 processed_path = f"processed/{candidate_id}/extracted.json"
                 extracted = {
@@ -278,7 +283,7 @@ async def run_simulation(count: int = 10000) -> AsyncGenerator[str, None]:
                             candidate["years_experience"],
                             candidate["clearance"],
                             json.dumps(candidate["education"]),
-                            f"simulated/{candidate_id}",
+                            raw_path,
                             processed_path,
                         ),
                     )
